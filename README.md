@@ -1,8 +1,9 @@
-## Free Learning PacktPublishing scripts
+## Free Learning PacktPublishing script
 
 **grabPacktFreeBook.py** - script that automatically grabs a daily free eBook from https://www.packtpub.com/packt/offers/free-learning
 
-**packtFreeBookDownloader.py** - script which downloads already claimed eBooks from your account https://www.packtpub.com/account/my-ebooks
+**packtPublishingFreeEbook.py** - script that automatically grabs and download a daily free eBook from https://www.packtpub.com/packt/offers/free-learning
+  You can use it also to download the already claimed eBooks from your account https://www.packtpub.com/account/my-ebooks
 
 
 ### Requirements:
@@ -18,38 +19,50 @@
   Once pip has been installed, run the following:
   
   ```
-  pip install requests
-  
-  pip install beautifulsoup4
-
+  pip install requests beautifulsoup4
   ```
   
   If you use Python 2.x :
   
   ```  
   pip install future
-
   ```
   
+* change a name of **configFileTemplate.cfg** to **configFile.cfg**  
 * change your login credentials in **configFile.cfg** file
   
 
-
 ### Usage:
-**[grabPacktFreeBook.py]**
-* You can manually run grabPacktFreeBook.py script to get the book:
+* The script **[packtPublishingFreeEbook.py]** might be fired up with one of 4 arguments:
 
+  1. Option -g [--grab] - claims (grabs) a daily eBook into your account
   ```
-  $ python grabPacktFreeBook.py
+  $ python packtPublishingFreeEbook.py -g
   ```
-* Or set it to be invoked automatically:
   
-  **LINUX** (tested on UBUNTU):
+  2. Option -gd [--grabd] - claims (grabs) a daily ebook and downloads the title afterwards to the location specified under *[downloadFolderPath]* field (configFile.cfg file)
+  ```
+  $ python packtPublishingFreeEbook.py -gd
+  ```
+  
+  3. Option -da [--dall] - downloads all ebooks from your account
+  ```
+  $ python packtPublishingFreeEbook.py -da
+  ```
+  
+  4. Option -dc [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
+  ```
+  $ python packtPublishingFreeEbook.py -dc
+  ```
+  
+* You can set it to be invoked automatically:
+  
+  **LINUX** (tested on UBUNTU 16.04):
   
   modify access permissions of the script:
   
   ```
-  $ chmod a+x grabPacktFreeBook.py 
+  $ chmod a+x packtPublishingFreeEbook.py 
   ```
   
   **CRON** setup (more: https://help.ubuntu.com/community/CronHowto) :
@@ -61,7 +74,7 @@
   paste (modify all paths correctly according to your setup):
   
   ```
-  0 12 * * * cd /home/me/Desktop/PacktScripts/ && /usr/bin/python3 grabPacktFreeBook.py > /home/me/Desktop/PacktScripts/grabPacktFreeBook.log 2>&1
+  0 12 * * * cd /home/me/Desktop/PacktScripts/ && /usr/bin/python3 packtPublishingFreeEbook.py > /home/me/Desktop/PacktScripts/packtPublishingFreeEbook.log 2>&1
   ```
   
   and save the crontab file. To verify if CRON fires up the script correctly, run a command:
@@ -98,19 +111,8 @@
   schtasks /delete /tn "grabEbookFromPacktTask"
   ```  
   
-* To download the already claimed book from your account set field **downloadBookAfterClaim** in **configFile.cfg** to **YES**  and modify **downloadFormats** you want to get
-
-
-**[packtFreeBookDownloader.py]**
-* It can be used to download your books from PacktPublishing
-
-* Just fire up the script to download all your already claimed books in declared formats (look at **downloadFormats** in **configFile.cfg**). To downlaod all books the field: **downloadBookTitles** shall be commented out like shown below:
-
-  ```
-  ;downloadBookTitles: Unity 4.x Game AI Programming , Multithreading in C# 5.0 Cookbook
-  ```
-
-* To download chosen titles from your account put them into **downloadBookTitles** in **configFile.cfg**
+  
+* EXAMPLE: To download chosen titles from your account put them into **downloadBookTitles** in **configFile.cfg**
   
   **configFile.cfg** example:
     download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats (pdf, epub, mobi) with zipped source code file
@@ -119,14 +121,16 @@
     [LOGIN_DATA]
     email= youremail@youremail.com
     password= yourpassword    
-
     
     [DOWNLOAD_DATA]
     downloadFolderPath: C:\Users\me\Desktop\myEbooksFromPackt
-    downloadBookAfterClaim: YES
     downloadFormats: pdf, epub, mobi, code
-    downloadBookTitles: Unity 4.x Game AI Programming , Multithreading in C# 5.0 Cookbook
-    
-  ```  
+    downloadBookTitles: Unity 4.x Game AI Programming , Multithreading in C# 5.0 Cookbook    
+  ```
+  
+  run:
+  ```
+    $ python packtPublishingFreeEbook.py -dc
+  ```
 
 In case of any questions feel free to ask, happy grabbing!
