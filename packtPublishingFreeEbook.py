@@ -159,20 +159,21 @@ class BookDownloader(object):
                         fileType='zip'
                     else:
                         fileType = format
-                    title = tempBookData[i]['title']
+
                     forbiddenChars = ['?',':','*','/','<','>','"','|','\\']
                     for ch in forbiddenChars:
-                        if ch in title :
-                            title = title.replace(ch,' ')
-                    fullFilePath=os.path.join(self.accountData.downloadFolderPath,title +'.'+fileType)
+                        if ch in tempBookData[i]['title'] :
+                            tempBookData[i]['title'] = tempBookData[i]['title'].replace(ch,' ')
+                    title = tempBookData[i]['title']
+                    try:
+                        print("[INFO] - Title: "+ title)
+                    except Exception as e: 
+                        title = str(title.encode('utf_8',errors='ignore'))  # if contains some unicodes
+                    fullFilePath=os.path.join(self.accountData.downloadFolderPath,tempBookData[i]['title'] +'.'+fileType)
                     if(os.path.isfile(fullFilePath)):
-                        print(fullFilePath+" already exists")
+                        print(title+'.'+fileType+ "already exists under the given path")
                         pass
                     else:
-                        try:
-                            print("[INFO] - Title: "+ title)
-                        except Exception as e: 
-                            title = str(title.encode('utf_8',errors='ignore'))  # if contains some unicodes
                         if format == 'code':
                             print("[INFO] - downloading code for eBook: "+title+ "...")                           
                         else:
