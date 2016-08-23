@@ -1,7 +1,5 @@
 ## Free Learning PacktPublishing script
 
-**grabPacktFreeBook.py** - script that automatically grabs a daily free eBook from https://www.packtpub.com/packt/offers/free-learning
-
 **packtPublishingFreeEbook.py** - script that automatically grabs and download a daily free eBook from https://www.packtpub.com/packt/offers/free-learning
   You can use it also to download the already claimed eBooks from your account https://www.packtpub.com/account/my-ebooks
 
@@ -35,27 +33,27 @@
 ### Usage:
 * The script **[packtPublishingFreeEbook.py]** might be fired up with one of 4 arguments:
 
-  1. Option -g [--grab] - claims (grabs) a daily eBook into your account
+  - Option -g [--grab] - claims (grabs) a daily eBook into your account
   ```
-  $ python packtPublishingFreeEbook.py -g
-  ```
-  
-  2. Option -gd [--grabd] - claims (grabs) a daily ebook and downloads the title afterwards to the location specified under *[downloadFolderPath]* field (configFile.cfg file)
-  ```
-  $ python packtPublishingFreeEbook.py -gd
+  python packtPublishingFreeEbook.py -g
   ```
   
-  3. Option -da [--dall] - downloads all ebooks from your account
+  - Option -gd [--grabd] - claims (grabs) a daily ebook and downloads the title afterwards to the location specified under *[downloadFolderPath]* field (configFile.cfg file)
   ```
-  $ python packtPublishingFreeEbook.py -da
-  ```
-  
-  4. Option -dc [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
-  ```
-  $ python packtPublishingFreeEbook.py -dc
+  python packtPublishingFreeEbook.py -gd
   ```
   
-* You can set it to be invoked automatically:
+  - Option -da [--dall] - downloads all ebooks from your account
+  ```
+  python packtPublishingFreeEbook.py -da
+  ```
+  
+  - Option -dc [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
+  ```
+  python packtPublishingFreeEbook.py -dc
+  ```
+  
+* You can set the script to be invoked automatically:
   
   **LINUX** (tested on UBUNTU 16.04):
   
@@ -112,11 +110,11 @@
   ```  
   
   
-* EXAMPLE: To download chosen titles from your account put them into **downloadBookTitles** in **configFile.cfg**
+* EXAMPLE: download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats  (pdf, epub, mobi) with zipped source code file from your packt account
+  
+  To download chosen titles from your account, you must put them into **downloadBookTitles** in **configFile.cfg** as shown below:
   
   **configFile.cfg** example:
-    download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats (pdf, epub, mobi) with zipped source code file
-
   ```
     [LOGIN_DATA]
     email= youremail@youremail.com
@@ -130,7 +128,7 @@
   
   run:
   ```
-    $ python packtPublishingFreeEbook.py -dc
+    python packtPublishingFreeEbook.py -dc
   ```
 
 In case of any questions feel free to ask, happy grabbing!
