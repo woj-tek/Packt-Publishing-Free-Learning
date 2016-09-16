@@ -159,7 +159,6 @@ class BookDownloader(object):
                         fileType='zip'
                     else:
                         fileType = format
-
                     forbiddenChars = ['?',':','*','/','<','>','"','|','\\']
                     for ch in forbiddenChars:
                         if ch in tempBookData[i]['title'] :
@@ -171,7 +170,7 @@ class BookDownloader(object):
                         title = str(title.encode('utf_8',errors='ignore'))  # if contains some unicodes
                     fullFilePath=os.path.join(self.accountData.downloadFolderPath,tempBookData[i]['title'] +'.'+fileType)
                     if(os.path.isfile(fullFilePath)):
-                        print(title+'.'+fileType+ "already exists under the given path")
+                        print("[INFO] -"+ title+'.'+fileType+ " already exists under the given path")
                         pass
                     else:
                         if format == 'code':
@@ -202,22 +201,22 @@ if __name__ == '__main__':
     parser.add_argument("-da","--dall", help="downloads all ebooks from your account",action="store_true")
     parser.add_argument("-dc","--dchosen", help="downloads chosen titles described in [downloadBookTitles] field",action="store_true")
     args = parser.parse_args()
-    cfgFilePath= "configFile.cfg"
-    #try:
-    myAccount = PacktAccountData(cfgFilePath)
-    if args.grab or args.grabd: 
-        grabber =FreeEBookGrabber(myAccount)
-        grabber.grabEbook()
-    if args.grabd or args.dall or args.dchosen:
-        downloader = BookDownloader(myAccount)
-        downloader.getDataOfAllMyBooks()
-    if args.grabd:
-        downloader.downloadBooks([grabber.bookTitle])     
-    elif args.dall:
-        downloader.downloadBooks()
-    elif args.dchosen:
-        downloader.downloadBooks(myAccount.downloadBookTitles)
-    print("[SUCCESS] - good, looks like all went well! :-)")            
-    #except Exception as e:
-    #    print("[ERROR] - Exception occured %s"% e)            
+    cfgFilePath= os.path.join(os.getcwd(),"configFile.cfg")
+    try:
+        myAccount = PacktAccountData(cfgFilePath)
+        if args.grab or args.grabd: 
+            grabber =FreeEBookGrabber(myAccount)
+            grabber.grabEbook()
+        if args.grabd or args.dall or args.dchosen:
+            downloader = BookDownloader(myAccount)
+            downloader.getDataOfAllMyBooks()
+        if args.grabd:          
+            downloader.downloadBooks([grabber.bookTitle])     
+        elif args.dall:
+            downloader.downloadBooks()
+        elif args.dchosen:
+            downloader.downloadBooks(myAccount.downloadBookTitles)
+        print("[SUCCESS] - good, looks like all went well! :-)")            
+    except Exception as e:
+        print("[ERROR] - Exception occured %s"% e)            
 

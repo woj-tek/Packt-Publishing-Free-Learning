@@ -72,7 +72,7 @@
   paste (modify all paths correctly according to your setup):
   
   ```
-  0 12 * * * cd /home/me/Desktop/PacktScripts/ && /usr/bin/python3 packtPublishingFreeEbook.py > /home/me/Desktop/PacktScripts/packtPublishingFreeEbook.log 2>&1
+  0 12 * * * cd /home/me/Desktop/PacktScripts/ && /usr/bin/python3 packtPublishingFreeEbook.py -gd > /home/me/Desktop/PacktScripts/packtPublishingFreeEbook.log 2>&1
   ```
   
   and save the crontab file. To verify if CRON fires up the script correctly, run a command:
