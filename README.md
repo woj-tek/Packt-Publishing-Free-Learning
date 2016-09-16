@@ -107,7 +107,12 @@
   
   ```
   schtasks /delete /tn "grabEbookFromPacktTask"
-  ```  
+  ```
+  
+  If you want to log all downloads add -l switch to grabEbookFromPacktTask i.e.
+  ```
+  schtasks /create /sc DAILY /tn "grabEbookFromPacktTask" /tr "C:\Users\me\Desktop\GrabPacktFreeBook\grabEbookFromPacktTask.bat -l" /st 12:00
+  ``` 
   
   
 * EXAMPLE: download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats  (pdf, epub, mobi) with zipped source code file from your packt account
