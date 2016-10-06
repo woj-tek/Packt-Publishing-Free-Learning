@@ -114,6 +114,11 @@
   schtasks /create /sc DAILY /tn "grabEbookFromPacktTask" /tr "C:\Users\me\Desktop\GrabPacktFreeBook\grabEbookFromPacktTask.bat -l" /st 12:00
   ``` 
   
+  If you want to additionaly make command line windows stay open after download add -p switch i.e.
+  ```
+  schtasks /create /sc DAILY /tn "grabEbookFromPacktTask" /tr "C:\Users\me\Desktop\GrabPacktFreeBook\grabEbookFromPacktTask.bat -l -p" /st 12:00
+  ``` 
+  
   
 * EXAMPLE: download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats  (pdf, epub, mobi) with zipped source code file from your packt account
   
