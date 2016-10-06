@@ -9,6 +9,7 @@ __version__ = "1.0.0"
 __email__ = "lukasz.uszko@gmail.com, daniel@vandorp.biz"
 
 import sys
+import time
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -37,7 +38,7 @@ class PacktAccountData(object):
         self.configuration = configparser.ConfigParser()
         if(not self.configuration.read(self.cfgFilePath)):
             raise configparser.Error(self.cfgFilePath+ ' file not found')
-        
+        self.logFile = self.__getLogFilename()
         self.packtPubUrl= "https://www.packtpub.com"
         self.myBooksUrl= "https://www.packtpub.com/account/my-ebooks"
         self.loginUrl= "https://www.packtpub.com/register"
@@ -49,6 +50,9 @@ class PacktAccountData(object):
         if(not os.path.exists(self.downloadFolderPath)):
             raise ValueError("[ERROR] Download folder path: '"+self.downloadFolderPath+ "' doesn't exist" )
         self.session = self.createSession()
+
+    def __getLogFilename(self):
+        return self.configuration.get("DOWNLOAD_DATA", 'logFile')
 
     def __getLoginData(self):
         email= self.configuration.get("LOGIN_DATA",'email')
@@ -97,8 +101,45 @@ class FreeEBookGrabber(object):
         self.accountData = accountData
         self.session = self.accountData.session
         self.bookTitle = ""
+
         
-    def grabEbook(self):
+    def __writeEbookInfoData(self, data):
+        """
+        Write result to file
+        :param data: the data to be writted down
+        """
+        with open(self.accountData.logFile, "a") as output:
+            output.write('\n')
+            for key, value in data.items():
+                output.write('%s --> %s\n' % (key.upper(), value))
+        print("[INFO] Complete informations for '%s' have been saved" % data["title"])
+        
+    def getEbookInfoData(self, r):
+        """
+        Log grabbed book information to log file
+        :param r: the previous response got when book has been successufully added to user library
+        :return: the data ready to be written to the log file
+        """
+        print("[INFO] Retrieving complete informations for '%s'" % self.bookTitle)
+        resultHtml = BeautifulSoup(r.text, 'html.parser')
+        lastGrabbedBook = resultHtml.find('div', {'id': 'product-account-list'}).find('div')
+        bookUrl = lastGrabbedBook.find('a').attrs['href']
+        bookPage = self.session.get(self.accountData.packtPubUrl+'%s' % bookUrl, headers=self.accountData.reqHeaders,
+                                     timeout=10).text
+        page = BeautifulSoup(bookPage, 'html.parser')
+
+        resultData = OrderedDict()
+        resultData["title"] = self.bookTitle
+        resultData["description"] = page.find('div', {'class': 'book-top-block-info-one-liner'}).text.strip()
+        author = page.find('div', {'class': 'book-top-block-info-authors'})
+        resultData["author"] = author.text.strip().split("\n")[0]
+        resultData["time"] = author.find('time').attrs["datetime"]
+        resultData["downloaded_at"] = time.strftime("%d-%m-%Y %H:%M")
+        print("[SUCCESS] Info data retrieved for '%s'" % self.bookTitle)
+        self.__writeEbookInfoData(resultData)
+        return resultData
+       
+    def grabEbook(self, log=False):
         print("[INFO] - start grabbing eBook...")           
         r = self.session.get(self.accountData.freeLearningUrl, headers=self.accountData.reqHeaders,timeout=10)
         if(r.status_code is not 200):
@@ -109,6 +150,8 @@ class FreeEBookGrabber(object):
         r = self.session.get(self.accountData.packtPubUrl+claimUrl,headers=self.accountData.reqHeaders,timeout=10)
         if(r.status_code is 200):
             print("[SUCCESS] - eBook: '" + self.bookTitle +"' has been succesfully grabbed !")
+            if log:
+                self.getEbookInfoData(r)
         else:
             raise requests.exceptions.RequestException("eBook:" + self.bookTitle +" has not been grabbed~! ,http GET status code != 200")
 
@@ -197,6 +240,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-g","--grab", help="grabs daily ebook",action="store_true")
+    parser.add_argument("-gl", "--grabl", help= "grabs and log data", action="store_true")
     parser.add_argument("-gd","--grabd", help="grabs daily ebook and downloads the title afterwards",action="store_true")
     parser.add_argument("-da","--dall", help="downloads all ebooks from your account",action="store_true")
     parser.add_argument("-dc","--dchosen", help="downloads chosen titles described in [downloadBookTitles] field",action="store_true")
@@ -204,19 +248,14 @@ if __name__ == '__main__':
     cfgFilePath= os.path.join(os.getcwd(),"configFile.cfg")
     try:
         myAccount = PacktAccountData(cfgFilePath)
-<<<<<<< HEAD
-        if args.grab or args.grabd: 
-=======
-        downloader = BookDownloader(myAccount)
-        if args.grabl:
-            grabber = FreeEBookGrabber(myAccount)
-            result = grabber.grabEbook(log=True)
-            myAccount.write_result(result)
-        if args.grab or args.grabd:
->>>>>>> 8ec8cac... Fixed missing instruction to write result data to log
+        if args.grab or args.grabl or args.grabd:
             grabber =FreeEBookGrabber(myAccount)
-            grabber.grabEbook()
+            if not args.grabl:
+                grabber.grabEbook()
+            else:
+                grabber.grabEbook(log=True)          
         if args.grabd or args.dall or args.dchosen:
+            downloader = BookDownloader(myAccount)
             downloader.getDataOfAllMyBooks()
         if args.grabd:          
             downloader.downloadBooks([grabber.bookTitle])     
