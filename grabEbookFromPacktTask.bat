@@ -9,5 +9,10 @@ if "%1" == "-l" (
     echo *** Grabbing free eBook from Packt Publishing.... ***
     python packtPublishingFreeEbook.py -gd
     echo *** Done ! ***
+)
+if "%1" == "-p" (
+    pause
+)
+if "%2" == "-p" (
     pause
 )
