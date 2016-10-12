@@ -10,6 +10,7 @@ __email__ = "lukasz.uszko@gmail.com, daniel@vandorp.biz"
 
 import sys
 import time
+import logging
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -21,7 +22,7 @@ if PY2:
     from builtins import object
     reload(sys)
     sys.setdefaultencoding('utf8')
-    
+
 import requests
 import os
 import configparser
@@ -29,6 +30,16 @@ import argparse
 import re
 from collections import OrderedDict
 from bs4 import BeautifulSoup
+
+
+logging.basicConfig(format='[%(levelname)s] - %(message)s', level=logging.INFO)
+# adding a new logging level
+logging.SUCCESS = 13
+logging.addLevelName(logging.SUCCESS, 'SUCCESS')
+logger = logging.getLogger(__name__)
+logger.success = lambda msg, *args: logger._log(logging.SUCCESS, msg, args)
+# downgrading logging level for requests
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 
 class PacktAccountData(object):
@@ -50,8 +61,9 @@ class PacktAccountData(object):
         self.myPacktEmail, self.myPacktPassword = self.__getLoginData()
         self.downloadFolderPath, self.downloadFormats, self.downloadBookTitles = self.__getDownloadData()
         if not os.path.exists(self.downloadFolderPath):
-            raise ValueError("[ERROR] Download folder path: "
-                             "'{}' doesn't exist".format(self.downloadFolderPath))
+            message = "Download folder path: '{}' doesn't exist".format(self.downloadFolderPath)
+            logger.error(message)
+            raise ValueError(message)
         self.session = self.createSession()
 
     def __getLogFilename(self):
@@ -87,7 +99,7 @@ class PacktAccountData(object):
                     'form_build_id': '',
                     'form_id': 'packt_user_login_form'}
         # to get form_build_id
-        print("[INFO] - Creating session...")
+        logger.info("Creating session...")
         r = requests.get(self.loginUrl, headers=self.reqHeaders, timeout=10)
         content = BeautifulSoup(str(r.content), 'html.parser')
         formBuildId = [element['value'] for element in
@@ -96,8 +108,10 @@ class PacktAccountData(object):
         session = requests.Session()
         rPost = session.post(self.loginUrl, headers=self.reqHeaders, data=formData)
         if rPost.status_code is not 200:
-            raise requests.exceptions.RequestException("login failed! ")
-        print("[INFO] - Session created, logged in successfully!")
+            message = "Login failed!"
+            logger.error(message)
+            raise requests.exceptions.RequestException(message)
+        logger.info("Session created, logged in successfully!")
         return session
 
 
@@ -118,7 +132,7 @@ class FreeEBookGrabber(object):
             output.write('\n')
             for key, value in data.items():
                 output.write('{} --> {}\n'.format(key.upper(), value))
-        print("[INFO] Complete information for '{}' have been saved".format(data["title"]))
+        logger.info("Complete information for '{}' have been saved".format(data["title"]))
 
     def getEbookInfoData(self, r):
         """
@@ -126,7 +140,7 @@ class FreeEBookGrabber(object):
         :param r: the previous response got when book has been successfully added to user library
         :return: the data ready to be written to the log file
         """
-        print("[INFO] Retrieving complete information for '{}'".format(self.bookTitle))
+        logger.info("Retrieving complete information for '{}'".format(self.bookTitle))
         resultHtml = BeautifulSoup(r.text, 'html.parser')
         lastGrabbedBook = resultHtml.find('div', {'id': 'product-account-list'}).find('div')
         bookUrl = lastGrabbedBook.find('a').attrs['href']
@@ -141,12 +155,13 @@ class FreeEBookGrabber(object):
         resultData["author"] = author.text.strip().split("\n")[0]
         resultData["time"] = author.find('time').attrs["datetime"]
         resultData["downloaded_at"] = time.strftime("%d-%m-%Y %H:%M")
-        print("[SUCCESS] Info data retrieved for '{}'".format(self.bookTitle))
+        logger.success("Info data retrieved for '{}'".format(self.bookTitle))
         self.__writeEbookInfoData(resultData)
         return resultData
 
     def grabEbook(self, log=False):
-        print("[INFO] - Start grabbing eBook...")
+        """Grabs the ebook"""
+        logger.info("Start grabbing eBook...")
         r = self.session.get(self.accountData.freeLearningUrl,
                              headers=self.accountData.reqHeaders, timeout=10)
         if r.status_code is not 200:
@@ -158,12 +173,13 @@ class FreeEBookGrabber(object):
         r = self.session.get(self.accountData.packtPubUrl + claimUrl,
                              headers=self.accountData.reqHeaders, timeout=10)
         if r.status_code is 200:
-            print("[SUCCESS] - eBook: '{}' has been successfully grabbed !".format(self.bookTitle))
+            logger.success("eBook: '{}' has been successfully grabbed!".format(self.bookTitle))
             if log:
                 self.getEbookInfoData(r)
         else:
-            raise requests.exceptions.RequestException(
-                "eBook: {} has not been grabbed~! ,http GET status code != 200".format(self.bookTitle))
+            message = "eBook: {} has not been grabbed~! ,http GET status code != 200".format(self.bookTitle)
+            logger.error(message)
+            raise requests.exceptions.RequestException(message)
 
 
 class BookDownloader(object):
@@ -175,13 +191,14 @@ class BookDownloader(object):
 
     def getDataOfAllMyBooks(self):
         """Gets data from all available ebooks"""
-        print("[INFO] - Getting data of all your books...")
+        logger.info("Getting data of all your books...")
         r = self.session.get(self.accountData.myBooksUrl,
                              headers=self.accountData.reqHeaders, timeout=10)
         if r.status_code is not 200:
-            raise requests.exceptions.RequestException(
-                "Cannot open {}, http GET status code != 200".format(self.accountData.myBooksUrl))
-        print("[INFO] - Opened  '{}' successfully!".format(self.accountData.myBooksUrl))
+            message = "Cannot open {}, http GET status code != 200".format(self.accountData.myBooksUrl)
+            logger.error(message)
+            raise requests.exceptions.RequestException(message)
+        logger.info("Opened '{}' successfully!".format(self.accountData.myBooksUrl))
 
         myBooksHtml = BeautifulSoup(r.text, 'html.parser')
         all = myBooksHtml.find(id='product-account-list').find_all('div', {'class': 'product-line unseen'})
@@ -228,32 +245,34 @@ class BookDownloader(object):
                             tempBookData[i]['title'] = tempBookData[i]['title'].replace(ch, ' ')
                     title = tempBookData[i]['title']
                     try:
-                        print("[INFO] - Title: '{}'".format(title))
+                        logger.info("Title: '{}'".format(title))
                     except Exception as e:
                         title = str(title.encode('utf_8', errors='ignore'))  # if contains some unicodes
                     fullFilePath = os.path.join(self.accountData.downloadFolderPath,
                                                 "{}.{}".format(tempBookData[i]['title'], fileType))
                     if os.path.isfile(fullFilePath):
-                        print("[INFO] - {}.{} already exists under the given path".format(title, fileType))
+                        logger.info("'{}.{}' already exists under the given path".format(title, fileType))
                         pass
                     else:
                         if form == 'code':
-                            print("[INFO] - Downloading code for eBook: '{}'...".format(title))
+                            logger.info("Downloading code for eBook: '{}'...".format(title))
                         else:
-                            print("[INFO] - Downloading eBook: '{}' in .{} format...".format(title, form))
+                            logger.info("Downloading eBook: '{}' in .{} format...".format(title, form))
                         r = self.session.get(self.accountData.packtPubUrl + tempBookData[i]['downloadUrls'][form],
                                              headers=self.accountData.reqHeaders, timeout=100)
                         if r.status_code is 200:
                             with open(fullFilePath, 'wb') as f:
                                 f.write(r.content)
                             if form == 'code':
-                                print("[SUCCESS] - Code for eBook: '{}' downloaded successfully!".format(title))
+                                logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
                             else:
-                                print("[SUCCESS] - eBook: '{}.{}' downloaded successfully!".format(title, form))
+                                logger.success("eBook: '{}.{}' downloaded successfully!".format(title, form))
                             nrOfBooksDownloaded = i + 1
                         else:
-                            raise requests.exceptions.RequestException("Cannot download '{}'".format(title))
-        print("[INFO] - {} eBooks have been downloaded !".format(str(nrOfBooksDownloaded)))
+                            message = "Cannot download '{}'".format(title)
+                            logger.error(message)
+                            raise requests.exceptions.RequestException(message)
+        logger.info("{} eBooks have been downloaded!".format(str(nrOfBooksDownloaded)))
 
 
 if __name__ == '__main__':
@@ -288,6 +307,6 @@ if __name__ == '__main__':
             downloader.downloadBooks()
         elif args.dchosen:
             downloader.downloadBooks(myAccount.downloadBookTitles)
-        print("[SUCCESS] - Good, looks like all went well! :-)")
+        logger.success("Good, looks like all went well! :-)")
     except Exception as e:
-        print("[ERROR] - Exception occurred {}".format(e))
+        logger.error("Exception occurred {}".format(e))
