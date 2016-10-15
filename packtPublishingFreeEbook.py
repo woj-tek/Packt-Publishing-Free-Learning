@@ -258,20 +258,25 @@ class BookDownloader(object):
                             logger.info("Downloading code for eBook: '{}'...".format(title))
                         else:
                             logger.info("Downloading eBook: '{}' in .{} format...".format(title, form))
-                        r = self.session.get(self.accountData.packtPubUrl + tempBookData[i]['downloadUrls'][form],
-                                             headers=self.accountData.reqHeaders, timeout=100)
-                        if r.status_code is 200:
-                            with open(fullFilePath, 'wb') as f:
-                                f.write(r.content)
-                            if form == 'code':
-                                logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
+                        try:
+                            r = self.session.get(self.accountData.packtPubUrl + tempBookData[i]['downloadUrls'][form],
+                                                 headers=self.accountData.reqHeaders, timeout=100)
+
+                            if r.status_code is 200:
+                                with open(fullFilePath, 'wb') as f:
+                                    f.write(r.content)
+                                if form == 'code':
+                                    logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
+                                else:
+                                    logger.success("eBook: '{}.{}' downloaded successfully!".format(title, form))
+                                nrOfBooksDownloaded = i + 1
                             else:
-                                logger.success("eBook: '{}.{}' downloaded successfully!".format(title, form))
-                            nrOfBooksDownloaded = i + 1
-                        else:
-                            message = "Cannot download '{}'".format(title)
-                            logger.error(message)
-                            raise requests.exceptions.RequestException(message)
+                                message = "Cannot download '{}'".format(title)
+                                logger.error(message)
+                                raise requests.exceptions.RequestException(message)
+                        except Exception as e:
+                            logger.error(e)
+                            
         logger.info("{} eBooks have been downloaded!".format(str(nrOfBooksDownloaded)))
 
 
