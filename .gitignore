@@ -1,0 +1,7 @@
+.git
+.credentials
+.client_secret.json
+env
+configFile.cfg
+*.log
+
