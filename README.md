@@ -14,20 +14,7 @@
   python get-pip.py
   ```
   
-  Once pip has been installed, run the following:
-  
-  ```
-  pip install requests beautifulsoup4
-  ```
-  
-  If you use Python 2.x :
-  
-  ```  
-  pip install future
-  ```
-
-  or just run:
-
+  Once pip has been installed, run the following command:
   ```
   pip install -r requirements.txt
   ```
@@ -37,7 +24,7 @@
   
 
 ### Usage:
-* The script **[packtPublishingFreeEbook.py]** might be fired up with one of 4 arguments:
+* The script **[packtPublishingFreeEbook.py]** might be fired up with one of 6 arguments:
 
   - Option -g [--grab] - claims (grabs) a daily eBook into your account
   ```
@@ -62,6 +49,11 @@
   - Option -dc [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
   ```
   python packtPublishingFreeEbook.py -dc
+  ```
+
+  - Option -sgd [--sgd] - claims and sends a book to *[gdFolderName]* folder onto Google Drive (more about setup Google Drive API below)  
+  ```
+  python packtPublishingFreeEbook.py -sgd
   ```
   
 * You can set the script to be invoked automatically:
@@ -129,8 +121,43 @@
   ```
   schtasks /create /sc DAILY /tn "grabEbookFromPacktTask" /tr "C:\Users\me\Desktop\GrabPacktFreeBook\grabEbookFromPacktTask.bat -l -p" /st 12:00
   ``` 
+
+
+* GOOGLE_DRIVE_API Setup:
+Full info about the Google Drive python API can be found [here](https://developers.google.com/drive/v3/web/quickstart/python)  
+
+Step 1: Turn on the Drive API
+    
+    Use [this wizard](https://console.developers.google.com/flows/enableapi?apiid=drive) to create or select a project in the Google Developers Console and automatically turn on the API. Click Continue, then Go to credentials.
+    On the *Add credentials to your project page*, click the *Cancel* button.
+    At the top of the page, select the OAuth consent screen tab. Select an Email address, enter a *Product name* if not already set, and click the Save button.
+    Select the Credentials tab, click the Create credentials button and select *OAuth client ID*.
+    Select the application type *Other*, enter the name *"GoogleDriveManager"*, and click the Create button.
+    Click *OK* to dismiss the resulting dialog.
+    Click the file_download (Download JSON) button to the right of the client ID.
+    Move this file to your working directory and rename it *"client_secret.json"*
+
+Step 2: Install the Google Client Library
   
+  Run the following command to install the library using pip:
+  ```
+  pip install --upgrade google-api-python-client  or pip install --upgrade google-api-python-client-py3
+  ``` 
+
+Step 3: Create credentials folder:
   
+  Simply, just fire up the script without any arguments; you will see a prompt in your browser asking for permissions, click then *allow*
+  ```
+  python packtPublishingFreeEbook.py 
+  ```  
+
+Step 4: Already done!
+  
+  Run the below command to send the claimed book to your Google Drive
+  ```
+  python packtPublishingFreeEbook.py -sgd
+  ``` 
+
 * EXAMPLE: download **'Unity 4.x Game AI Programming'** and  **'Multithreading in C# 5.0 Cookbook'** books in all available formats  (pdf, epub, mobi) with zipped source code file from your packt account
   
   To download chosen titles from your account, you must put them into **downloadBookTitles** in **configFile.cfg** as shown below:
