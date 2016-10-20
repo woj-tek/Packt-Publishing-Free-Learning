@@ -1,7 +1,7 @@
 .git
 .credentials
 .client_secret.json
-env
+env/
 configFile.cfg
 *.log
-
+__pycache__/

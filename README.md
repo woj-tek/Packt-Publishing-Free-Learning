@@ -13,8 +13,9 @@
   ```  
   python get-pip.py
   ```
-  
-  Once pip has been installed, run the following command:
+* Optionally install [*virtualenv*](http://docs.python-guide.org/en/latest/dev/virtualenvs/) (pip install virtualenv)
+
+* Once pip has been installed, run the following command:
   ```
   pip install -r requirements.txt
   ```
@@ -24,36 +25,41 @@
   
 
 ### Usage:
-1. The script **[packtPublishingFreeEbook.py]** might be fired up with one of 6 arguments:
+1. The script **[packtPublishingFreeEbook.py]** might be fired up with one of 7 arguments:
 
-  - Option -g [--grab] - claims (grabs) a daily eBook into your account
+  - Option *-g* [--grab] - claims (grabs) a daily eBook into your account
   ```
   python packtPublishingFreeEbook.py -g
   ```
 
-  - Option -gl [--grabl] - claims (grabs) a daily eBook into your account and save book info to log file specified in config file
+  - Option *-gl* [--grabl] - claims (grabs) a daily eBook into your account and save book info to log file specified in config file
   ```
   python packtPublishingFreeEbook.py -gl
   ```
 
-  - Option -gd [--grabd] - claims (grabs) a daily ebook and downloads the title afterwards to the location specified under *[downloadFolderPath]* field (configFile.cfg file)
+  - Option *-gd* [--grabd] - claims (grabs) a daily ebook and downloads the title afterwards to the location specified under *[downloadFolderPath]* field (configFile.cfg file)
   ```
   python packtPublishingFreeEbook.py -gd
   ```
   
-  - Option -da [--dall] - downloads all ebooks from your account
+  - Option *-da* [--dall] - downloads all ebooks from your account
   ```
   python packtPublishingFreeEbook.py -da
   ```
   
-  - Option -dc [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
+  - Option *-dc* [--dchosen] - downloads chosen titles specified under *[downloadBookTitles]* field in *configFile.cfg*
   ```
   python packtPublishingFreeEbook.py -dc
   ```
 
-  - Option -sgd [--sgd] - claims and sends a book to *[gdFolderName]* folder onto Google Drive (more about setup Google Drive api in GOOGLE_DRIVE_API Setup)  
+  - Option *-sgd* [--sgd] - claims and uploads a book to *[gdFolderName]* folder onto Google Drive (more about setup Google Drive api in GOOGLE_DRIVE_API Setup)  
   ```
   python packtPublishingFreeEbook.py -sgd
+  ```
+  
+  - Option *-m* [--sgd] - claims and sends an email with the newest book (mail option confguration under [MAIL] path in *configFile.cfg*) 
+  ```
+  python packtPublishingFreeEbook.py -m
   ```
   
 2. You can set the script to be invoked automatically:
