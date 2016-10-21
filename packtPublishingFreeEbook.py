@@ -341,7 +341,7 @@ if __name__ == '__main__':
                if pdfPath:
                    mb.send_book(pdfPath)
                if mobiPath:
-                   mb.send_book(mobiPath)      
+                   mb.send_kindle(mobiPath)      
             if args.sgd or args.mail:
                [os.remove(path) for path in paths]                
         
