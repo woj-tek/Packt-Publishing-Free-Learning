@@ -57,7 +57,7 @@
   python packtPublishingFreeEbook.py -sgd
   ```
   
-  - Option *-m* [--sgd] - claims and sends an email with the newest book (mail option confguration under [MAIL] path in *configFile.cfg*) 
+  - Option *-m* [--mail] - claims and sends an email with the newest book (mail option confguration under [MAIL] path in *configFile.cfg*) 
   ```
   python packtPublishingFreeEbook.py -m
   ```
@@ -148,7 +148,6 @@
     gdAppName: GoogleDriveManager
     gdFolderName: PACKT_EBOOKS
   ```
-  
   run:
   ```
     python packtPublishingFreeEbook.py -dc
