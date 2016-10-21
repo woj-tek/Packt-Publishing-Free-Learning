@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals, division, absolute_impo
 
 import sys
 import time
-import logging
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -28,7 +27,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
-logger = logging.getLogger("packtPublishingFreeEbook")
+import logging
+import utils.logger as log_manager
+logger = log_manager.get_logger(__name__)
 
 ####################################-SENDING EMAILS CONTAINING EBOOK-############################################
 COMMA = ", "

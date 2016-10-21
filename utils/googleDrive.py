@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals, division, absolute_impo
 
 import sys
 import time
-import logging
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -31,7 +30,9 @@ from apiclient import discovery
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseDownload
 
-logger = logging.getLogger("packtPublishingFreeEbook")
+import logging
+import utils.logger as log_manager
+logger = log_manager.get_logger(__name__)
 
 ####################################-GOOGLE DRIVE MANAGER############################################
 

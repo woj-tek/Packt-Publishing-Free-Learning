@@ -10,7 +10,6 @@ __email__ = "lukasz.uszko@gmail.com, daniel@vandorp.biz"
 
 import sys
 import time
-import logging
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -30,13 +29,10 @@ import argparse
 import re
 from collections import OrderedDict
 from bs4 import BeautifulSoup
+import logging
 
-logging.basicConfig(format='[%(levelname)s] - %(message)s', level=logging.INFO)
-# adding a new logging level
-logging.SUCCESS = 13
-logging.addLevelName(logging.SUCCESS, 'SUCCESS')
-logger = logging.getLogger(__name__)
-logger.success = lambda msg, *args: logger._log(logging.SUCCESS, msg, args)
+import utils.logger as log_manager
+logger = log_manager.get_logger(__name__)
 # downgrading logging level for requests
 logging.getLogger("requests").setLevel(logging.WARNING)
 
@@ -49,7 +45,7 @@ class PacktAccountData(object):
         self.configuration = configparser.ConfigParser()
         if not self.configuration.read(self.cfgFilePath):
             raise configparser.Error('{} file not found'.format(self.cfgFilePath))
-        self.logFile = self.__getLogFilename()
+        self.bookInfoDataLogFile = self.__getEbookExtraInfoLogFilename()
         self.packtPubUrl = "https://www.packtpub.com"
         self.myBooksUrl = "https://www.packtpub.com/account/my-ebooks"
         self.loginUrl = "https://www.packtpub.com/register"
@@ -65,9 +61,9 @@ class PacktAccountData(object):
             raise ValueError(message)
         self.session = self.createSession()
 
-    def __getLogFilename(self):
-        """Gets the filename of the logging file."""
-        return self.configuration.get("DOWNLOAD_DATA", 'logFile')
+    def __getEbookExtraInfoLogFilename(self):
+        """Gets the filename of the ebook metadata log file."""
+        return self.configuration.get("DOWNLOAD_DATA", 'ebookExtraInfoLogFilePath')
 
     def __getLoginData(self):
         """Gets user login credentials."""
@@ -127,7 +123,7 @@ class FreeEBookGrabber(object):
         Write result to file
         :param data: the data to be written down
         """
-        with open(self.accountData.logFile, "a") as output:
+        with open(self.accountData.bookInfoDataLogFile, "a") as output:
             output.write('\n')
             for key, value in data.items():
                 output.write('{} --> {}\n'.format(key.upper(), value))
