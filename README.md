@@ -174,15 +174,12 @@ Full info about the Google Drive python API can be found [here](https://develope
   ``` 
 
 3. Create credentials folder:
-  - Simply, just fire up the script without any arguments; you will see a prompt in your browser asking for permissions, click then *allow*
-  ```
-  python packtPublishingFreeEbook.py 
-  ```  
-4. Already done!
-  - Run the below command to send the claimed book to your Google Drive
+  - Simply, just fire up the script with *-sgd* argument; During first launch you will see a prompt in your browser asking for permissions, click then *allow*
   ```
   python packtPublishingFreeEbook.py -sgd
-  ``` 
+  ```  
+4. Already done!
+  - Run the same command as above to claim and upload the eBook to Google Drive.
 
 
 In case of any questions feel free to ask, happy grabbing!
