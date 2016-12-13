@@ -31,6 +31,8 @@ from collections import OrderedDict
 from bs4 import BeautifulSoup
 import logging
 
+from clint.textui import progress
+
 import utils.logger as log_manager
 logger = log_manager.get_logger(__name__)
 # downgrading logging level for requests
@@ -255,11 +257,15 @@ class BookDownloader(object):
                             logger.info("Downloading eBook: '{}' in .{} format...".format(title, form))
                         try:
                             r = self.session.get(self.accountData.packtPubUrl + tempBookData[i]['downloadUrls'][form],
-                                                 headers=self.accountData.reqHeaders, timeout=100)
+                                                 headers=self.accountData.reqHeaders, timeout=100,stream=True)
 
                             if r.status_code is 200:
                                 with open(fullFilePath, 'wb') as f:
-                                    f.write(r.content)
+                                        total_length = int(r.headers.get('content-length'))
+                                        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
+                                                if chunk:
+                                                        f.write(chunk)
+                                                        f.flush()
                                 if form == 'code':
                                     logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
                                 else:
