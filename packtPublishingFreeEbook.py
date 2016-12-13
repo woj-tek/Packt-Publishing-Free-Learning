@@ -234,7 +234,7 @@ class BookDownloader(object):
                         fileType = 'zip'
                     else:
                         fileType = form
-                    forbiddenChars = ['?', ':', '*', '/', '<', '>', '"', '|', '\\']
+                    forbiddenChars = ['?', ':', '*', '/', '<', '>', '"', '|', '\\', '\u2013']
                     for ch in forbiddenChars:
                         if ch in tempBookData[i]['title']:
                             tempBookData[i]['title'] = tempBookData[i]['title'].replace(ch, ' ')
