@@ -10,6 +10,7 @@ if "%1" == "-l" (
     python packtPublishingFreeEbook.py -gd
     echo *** Done ! ***
 )
+pause
 if "%1" == "-p" (
     pause
 )

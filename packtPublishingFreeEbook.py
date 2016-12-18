@@ -31,7 +31,6 @@ from collections import OrderedDict
 from bs4 import BeautifulSoup
 import logging
 
-from clint.textui import progress
 
 import utils.logger as log_manager
 logger = log_manager.get_logger(__name__)
@@ -211,7 +210,10 @@ class BookDownloader(object):
                     else:
                         downloadUrls['code'] = m.group(0)
             self.bookData[i]['downloadUrls'] = downloadUrls
-
+    
+    def __updateDownloadProgressBar(self, currentWorkDone):
+        print("\r[PROGRESS] - [{0:50s}] {1:.1f}% ".format('#' * int(currentWorkDone * 50), currentWorkDone*100), end="", flush=True)
+        
     def downloadBooks(self, titles=None, formats=None):
         """
         Downloads the ebooks.
@@ -249,7 +251,6 @@ class BookDownloader(object):
                                                 "{}.{}".format(tempBookData[i]['title'], fileType))
                     if os.path.isfile(fullFilePath):
                         logger.info("'{}.{}' already exists under the given path".format(title, fileType))
-                        pass
                     else:
                         if form == 'code':
                             logger.info("Downloading code for eBook: '{}'...".format(title))
@@ -261,23 +262,24 @@ class BookDownloader(object):
 
                             if r.status_code is 200:
                                 with open(fullFilePath, 'wb') as f:
-                                        total_length = int(r.headers.get('content-length'))
-                                        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
-                                                if chunk:
-                                                        f.write(chunk)
-                                                        f.flush()
+                                        totalLength = int(r.headers.get('content-length'))
+                                        numOfChunks = (totalLength/1024) + 1
+                                        for num, chunk in enumerate(r.iter_content(chunk_size=1024)):
+                                            if chunk:
+                                                self.__updateDownloadProgressBar(num/numOfChunks)
+                                                f.write(chunk)
+                                                f.flush()
                                 if form == 'code':
                                     logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
                                 else:
                                     logger.success("eBook: '{}.{}' downloaded successfully!".format(title, form))
-                                nrOfBooksDownloaded = i + 1
+                                nrOfBooksDownloaded += 1
                             else:
                                 message = "Cannot download '{}'".format(title)
                                 logger.error(message)
                                 raise requests.exceptions.RequestException(message)
                         except Exception as e:
-                            logger.error(e)
-                            
+                            logger.error(e)                           
         logger.info("{} eBooks have been downloaded!".format(str(nrOfBooksDownloaded)))
 
 
