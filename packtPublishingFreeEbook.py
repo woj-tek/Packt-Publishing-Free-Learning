@@ -212,7 +212,8 @@ class BookDownloader(object):
             self.bookData[i]['downloadUrls'] = downloadUrls
     
     def __updateDownloadProgressBar(self, currentWorkDone):
-        print("\r[PROGRESS] - [{0:50s}] {1:.1f}% ".format('#' * int(currentWorkDone * 50), currentWorkDone*100), end="", flush=True)
+        """Prints progress bar, currentWorkDone should be float value in range {0.0 - 1.0}"""
+        print("\r[PROGRESS] - [{0:50s}] {1:.1f}% ".format('#' * int(currentWorkDone * 50), currentWorkDone*100), end="" ,)
         
     def downloadBooks(self, titles=None, formats=None):
         """
