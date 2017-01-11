@@ -137,8 +137,10 @@ class FreeEBookGrabber(object):
         :return: the data ready to be written to the log file
         """
         logger.info("Retrieving complete information for '{}'".format(self.bookTitle))
+        r = self.session.get(self.accountData.freeLearningUrl,
+                             headers=self.accountData.reqHeaders, timeout=10)
         resultHtml = BeautifulSoup(r.text, 'html.parser')
-        lastGrabbedBook = resultHtml.find('div', {'id': 'product-account-list'}).find('div')
+        lastGrabbedBook = resultHtml.find('div', {'class': 'dotd-main-book-image'})
         bookUrl = lastGrabbedBook.find('a').attrs['href']
         bookPage = self.session.get(self.accountData.packtPubUrl + bookUrl,
                                     headers=self.accountData.reqHeaders, timeout=10).text
@@ -149,7 +151,9 @@ class FreeEBookGrabber(object):
         resultData["description"] = page.find('div', {'class': 'book-top-block-info-one-liner'}).text.strip()
         author = page.find('div', {'class': 'book-top-block-info-authors'})
         resultData["author"] = author.text.strip().split("\n")[0]
-        resultData["time"] = author.find('time').attrs["datetime"]
+        resultData["date_published"] = page.find('time').text
+        codeDownloadUrl = page.find('div', {'class': 'book-top-block-code'}).find('a').attrs['href']
+        resultData["code_files_url"] = "https://packtpub.com{}".format(codeDownloadUrl)
         resultData["downloaded_at"] = time.strftime("%d-%m-%Y %H:%M")
         logger.success("Info data retrieved for '{}'".format(self.bookTitle))
         self.__writeEbookInfoData(resultData)
