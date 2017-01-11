@@ -6,4 +6,3 @@ configFile.cfg
 *.log
 __pycache__/
 *.pyc
-.vscode
