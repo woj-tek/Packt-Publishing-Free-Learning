@@ -153,7 +153,7 @@ class FreeEBookGrabber(object):
         resultData["author"] = author.text.strip().split("\n")[0]
         resultData["date_published"] = page.find('time').text
         codeDownloadUrl = page.find('div', {'class': 'book-top-block-code'}).find('a').attrs['href']
-        resultData["code_files_url"] = "https://packtpub.com{}".format(codeDownloadUrl)
+        resultData["code_files_url"] = self.accountData.packtPubUrl + codeDownloadUrl
         resultData["downloaded_at"] = time.strftime("%d-%m-%Y %H:%M")
         logger.success("Info data retrieved for '{}'".format(self.bookTitle))
         self.__writeEbookInfoData(resultData)
