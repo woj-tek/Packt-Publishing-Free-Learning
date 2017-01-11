@@ -62,6 +62,11 @@
   python packtPublishingFreeEbook.py -m
   ```
   
+  - SubOption *-f* [--folder] - downloads an ebook into a created folder, named as ebook's title
+  ```
+  python packtPublishingFreeEbook.py -gd -f
+  ```
+  
 2. You can set the script to be invoked automatically:
   
   **LINUX** (tested on UBUNTU 16.04):

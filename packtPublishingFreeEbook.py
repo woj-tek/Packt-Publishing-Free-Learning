@@ -171,7 +171,7 @@ class FreeEBookGrabber(object):
         if r.status_code is 200:
             logger.success("eBook: '{}' has been successfully grabbed!".format(self.bookTitle))
             if logEbookInfodata:
-                self.getEbookInfoData(r)				
+                self.getEbookInfoData(r)
         else:
             message = "eBook: {} has not been grabbed~! ,http GET status code != 200".format(self.bookTitle)
             logger.error(message)
@@ -210,12 +210,12 @@ class BookDownloader(object):
                     else:
                         downloadUrls['code'] = m.group(0)
             self.bookData[i]['downloadUrls'] = downloadUrls
-    
+
     def __updateDownloadProgressBar(self, currentWorkDone):
         """Prints progress bar, currentWorkDone should be float value in range {0.0 - 1.0}"""
         print("\r[PROGRESS] - [{0:50s}] {1:.1f}% ".format('#' * int(currentWorkDone * 50), currentWorkDone*100), end="" ,)
-        
-    def downloadBooks(self, titles=None, formats=None):
+
+    def downloadBooks(self, titles=None, formats=None, intoFolder = False):
         """
         Downloads the ebooks.
         :param titles: list('C# tutorial', 'c++ Tutorial') ;
@@ -248,7 +248,13 @@ class BookDownloader(object):
                         logger.info("Title: '{}'".format(title))
                     except Exception as e:
                         title = str(title.encode('utf_8', errors='ignore'))  # if contains some unicodes
-                    fullFilePath = os.path.join(self.accountData.downloadFolderPath,
+                    if intoFolder:
+                        targetDownloadPath = os.path.join(self.accountData.downloadFolderPath, title)
+                        if not os.path.isdir(targetDownloadPath):
+                            os.mkdir(targetDownloadPath)
+                    else:
+                        targetDownloadPath = os.path.join(self.accountData.downloadFolderPath)
+                    fullFilePath = os.path.join(targetDownloadPath,
                                                 "{}.{}".format(tempBookData[i]['title'], fileType))
                     if os.path.isfile(fullFilePath):
                         logger.info("'{}.{}' already exists under the given path".format(title, fileType))
@@ -280,7 +286,7 @@ class BookDownloader(object):
                                 logger.error(message)
                                 raise requests.exceptions.RequestException(message)
                         except Exception as e:
-                            logger.error(e)                           
+                            logger.error(e)
         logger.info("{} eBooks have been downloaded!".format(str(nrOfBooksDownloaded)))
 
 
@@ -302,31 +308,37 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("-m", "--mail", help="send download to emails defined in config file", default=False,
                         action="store_true")
-    
+    parser.add_argument("-f", "--folder", help="downloads eBook into a folder", default=False,
+                        action="store_true")
+
     args = parser.parse_args()
     cfgFilePath = os.path.join(os.getcwd(), "configFile.cfg")
-    
+
     try:
         myAccount = PacktAccountData(cfgFilePath)
         grabber = FreeEBookGrabber(myAccount)
         downloader = BookDownloader(myAccount)
         if args.sgd:
             from utils.googleDrive import GoogleDriveManager
-            googleDrive= GoogleDriveManager(cfgFilePath) 
-         
+            googleDrive= GoogleDriveManager(cfgFilePath)
+
         if args.grab or args.grabl or args.grabd or args.sgd or args.mail:
             if not args.grabl:
                 grabber.grabEbook()
             else:
                 grabber.grabEbook(logEbookInfodata=True)
-        
+
         if args.grabd or args.dall or args.dchosen or args.sgd or args.mail:
             downloader.getDataOfAllMyBooks()
         
+        intoFolder = False
+        if args.folder:
+            intoFolder = True
+            
         if args.grabd or args.sgd or args.mail:
             if args.sgd or args.mail:
-                myAccount.downloadFolderPath = os.getcwd()              
-            downloader.downloadBooks([grabber.bookTitle])
+                myAccount.downloadFolderPath = os.getcwd()
+            downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
             if args.sgd or args.mail:
                paths = [os.path.join(myAccount.downloadFolderPath, path) \
                        for path in os.listdir(myAccount.downloadFolderPath) \
@@ -346,15 +358,15 @@ if __name__ == '__main__':
                if pdfPath:
                    mb.send_book(pdfPath)
                if mobiPath:
-                   mb.send_kindle(mobiPath)      
+                   mb.send_kindle(mobiPath)
             if args.sgd or args.mail:
-               [os.remove(path) for path in paths]                
-        
+               [os.remove(path) for path in paths]
+
         elif args.dall:
-            downloader.downloadBooks()
+            downloader.downloadBooks(intoFolder = intoFolder)
 
         elif args.dchosen:
-            downloader.downloadBooks(myAccount.downloadBookTitles)
+            downloader.downloadBooks(myAccount.downloadBookTitles, intoFolder = intoFolder)
         logger.success("Good, looks like all went well! :-)")
     except Exception as e:
         logger.error("Exception occurred {}".format(e))
