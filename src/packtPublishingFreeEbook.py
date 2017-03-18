@@ -314,57 +314,57 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cfgFilePath = os.path.join(os.getcwd(), "configFile.cfg")
 
-    try:
-        session = PacktPubHttpSession(PacktAccountDataModel(cfgFilePath))
-        grabber = BookGrabber(session)
-        downloader = BookDownloader(session)
+#try:
+    session = PacktPubHttpSession(PacktAccountDataModel(cfgFilePath))
+    grabber = BookGrabber(session)
+    downloader = BookDownloader(session)
+    if args.sgd:
+        from utils.googleDrive import GoogleDriveManager
+        googleDrive= GoogleDriveManager(cfgFilePath)
+
+    if args.grab or args.grabl or args.grabd or args.sgd or args.mail:
+        if not args.grabl:
+            grabber.grabEbook()
+        else:
+            grabber.grabEbook(logEbookInfodata=True)
+
+    if args.grabd or args.dall or args.dchosen or args.sgd or args.mail:
+        downloader.getDataOfAllMyBooks()
+    intoFolder = False
+    if args.folder:
+        intoFolder = True
+    if args.grabd or args.sgd or args.mail:
+        if args.sgd or args.mail:
+            session.getCurrentConfig().downloadFolderPath = os.getcwd()
+        downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
+        if args.sgd or args.mail:
+           paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
+                   for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
+                       if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
         if args.sgd:
-            from utils.googleDrive import GoogleDriveManager
-            googleDrive= GoogleDriveManager(cfgFilePath)
+           googleDrive.send_files(paths)
+        elif args.mail:
+           from utils.mail import MailBook
+           mb = MailBook(cfgFilePath)
+           pdfPath = None
+           mobiPath = None
+           try:
+               pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
+               mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
+           except:
+               pass
+           if pdfPath:
+               mb.send_book(pdfPath)
+           if mobiPath:
+               mb.send_kindle(mobiPath)
+        if args.sgd or args.mail:
+           [os.remove(path) for path in paths]
 
-        if args.grab or args.grabl or args.grabd or args.sgd or args.mail:
-            if not args.grabl:
-                grabber.grabEbook()
-            else:
-                grabber.grabEbook(logEbookInfodata=True)
+    elif args.dall:
+        downloader.downloadBooks(intoFolder = intoFolder)
 
-        if args.grabd or args.dall or args.dchosen or args.sgd or args.mail:
-            downloader.getDataOfAllMyBooks()
-        intoFolder = False
-        if args.folder:
-            intoFolder = True
-        if args.grabd or args.sgd or args.mail:
-            if args.sgd or args.mail:
-                session.getCurrentConfig().downloadFolderPath = os.getcwd()
-            downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
-            if args.sgd or args.mail:
-               paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
-                       for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
-                           if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
-            if args.sgd:
-               googleDrive.send_files(paths)
-            elif args.mail:
-               from utils.mail import MailBook
-               mb = MailBook(cfgFilePath)
-               pdfPath = None
-               mobiPath = None
-               try:
-                   pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
-                   mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
-               except:
-                   pass
-               if pdfPath:
-                   mb.send_book(pdfPath)
-               if mobiPath:
-                   mb.send_kindle(mobiPath)
-            if args.sgd or args.mail:
-               [os.remove(path) for path in paths]
-
-        elif args.dall:
-            downloader.downloadBooks(intoFolder = intoFolder)
-
-        elif args.dchosen:
-            downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder = intoFolder)
-        logger.success("Good, looks like all went well! :-)")
-    except Exception as e:
-        logger.error("Exception occurred {}".format(e))
+    elif args.dchosen:
+        downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder = intoFolder)
+    logger.success("Good, looks like all went well! :-)")
+#except Exception as e:
+#    logger.error("Exception occurred {}".format(e))
