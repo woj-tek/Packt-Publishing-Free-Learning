@@ -121,14 +121,9 @@ class PacktPubHttpSession(object):
         formData['form_build_id'] = formBuildId[0]
         session = requests.Session()
         rPost = session.post(self.accountConfig.loginUrl, headers=self.accountConfig.reqHeaders, data=formData)
-        rGet = session.get(self.accountConfig.myBooksUrl, headers=self.accountConfig.reqHeaders, timeout=10)
-        if rPost.status_code is not 200:
-            message = "Login failed!"
-            logger.error(message)
-            raise requests.exceptions.RequestException(message)
         #check once again if we are really logged into the server
         rGet = session.get(self.accountConfig.myBooksUrl, headers=self.accountConfig.reqHeaders, timeout=10)
-        if rGet.text.find("register-page-form") != -1:
+        if rPost.status_code is not 200 or rGet.text.find("register-page-form") != -1:
             message = "Login failed!"
             logger.error(message)
             raise requests.exceptions.RequestException(message)
