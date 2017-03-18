@@ -1,21 +1,4 @@
 #!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division, absolute_import  # We require Python 2.6 or later
-
-import sys
-import time
-
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from future import standard_library
-    standard_library.install_aliases()
-    from builtins import *
-    from builtins import str
-    from builtins import map
-    from builtins import object
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
 import requests
 import os
 import configparser
@@ -27,9 +10,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
-import logging
-import utils.logger as log_manager
+from utils import *
 logger = log_manager.get_logger(__name__)
+
 
 ####################################-SENDING EMAILS CONTAINING EBOOK-############################################
 COMMA = ", "

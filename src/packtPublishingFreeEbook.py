@@ -1,26 +1,5 @@
 #!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division, absolute_import  # We require Python 2.6 or later
-
-__author__ = "Lukasz Uszko, Daniel van Dorp"
-__copyright__ = "Copyright 2017"
-__license__ = "MIT"
-__version__ = "1.1.0"
-__email__ = "lukasz.uszko@gmail.com, daniel@vandorp.biz"
-
-import sys
-import time
-
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from future import standard_library
-    standard_library.install_aliases()
-    from builtins import *
-    from builtins import str
-    from builtins import map
-    from builtins import object
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+from __future__ import (absolute_import, division, print_function, unicode_literals)
 
 import requests
 import os
@@ -29,9 +8,8 @@ import argparse
 import re
 from collections import OrderedDict
 from bs4 import BeautifulSoup
-import logging
 
-import utils.logger as log_manager
+from utils import *
 logger = log_manager.get_logger(__name__)
 # downgrading logging level for requests
 logging.getLogger("requests").setLevel(logging.WARNING)

@@ -1,21 +1,5 @@
 #!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division, absolute_import  # We require Python 2.6 or later
-
 import sys
-import time
-
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from future import standard_library
-    standard_library.install_aliases()
-    from builtins import *
-    from builtins import str
-    from builtins import map
-    from builtins import object
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-
 import requests
 import os
 import configparser
@@ -30,8 +14,7 @@ from apiclient import discovery
 from apiclient.http import MediaFileUpload
 from apiclient.http import MediaIoBaseDownload
 
-import logging
-import utils.logger as log_manager
+from utils import *
 logger = log_manager.get_logger(__name__)
 
 ####################################-GOOGLE DRIVE MANAGER############################################
