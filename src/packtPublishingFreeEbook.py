@@ -6,6 +6,7 @@ import os
 import configparser
 import argparse
 import re
+import sys
 from collections import OrderedDict
 from bs4 import BeautifulSoup
 
@@ -239,6 +240,7 @@ class BookDownloader(object):
         if len(tempBookData) == 0:
             logger.info("There is no books with provided titles: {} at your account!".format(titles))
         nrOfBooksDownloaded = 0
+        is_interactive = sys.stdout.isatty()
         for i, book in enumerate(tempBookData):
             for form in formats:
                 if form in list(tempBookData[i]['downloadUrls'].keys()):
@@ -272,10 +274,12 @@ class BookDownloader(object):
                                         numOfChunks = (totalLength/1024) + 1
                                         for num, chunk in enumerate(r.iter_content(chunk_size=1024)):
                                             if chunk:
-                                                self.__updateDownloadProgressBar(num/numOfChunks)
+                                                if is_interactive:
+                                                    self.__updateDownloadProgressBar(num/numOfChunks)
                                                 f.write(chunk)
                                                 f.flush()
-                                        self.__updateDownloadProgressBar(-1)#add end of line
+                                        if is_interactive:
+                                            self.__updateDownloadProgressBar(-1)#add end of line
                                 if form == 'code':
                                     logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
                                 else:
