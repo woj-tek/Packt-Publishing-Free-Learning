@@ -182,6 +182,10 @@ Full info about the Google Drive python API can be found [here](https://develope
   ```
   python packtPublishingFreeEbook.py -sgd
   ```  
+  - Or if you're unable to launch browser locally (e.g. you're connecting through SSH without X11 forwarding) use this command once, follow instructions and give permission and later you can use normal command (without *--noauth_local_webserver*).
+  ```
+  python packtPublishingFreeEbook.py -sgd --noauth_local_webserver
+  ```  
 4. Already done!
   - Run the same command as above to claim and upload the eBook to Google Drive.
 
