@@ -1,4 +1,5 @@
 @echo off
+cd %0\..
 if "%1" == "-l" (
     echo ***Date: %DATE:/=-% [%TIME::=:%] *** >> packtPublishingFreeEbook.log
     echo *** Grabbing free eBook from Packt Publishing.... *** >> packtPublishingFreeEbook.log
