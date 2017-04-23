@@ -312,6 +312,8 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("-m", "--mail", help="send download to emails defined in config file", default=False,
                         action="store_true")
+    parser.add_argument("--report_mail", help="send fail report email when script somehow failed", default=False,
+                        action="store_true")
     parser.add_argument("-f", "--folder", help="downloads eBook into a folder", default=False,
                         action="store_true")
     parser.add_argument("--noauth_local_webserver", help="set if you want auth GoogleDrive without local browser",
@@ -320,57 +322,61 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cfgFilePath = os.path.join(os.getcwd(), "configFile.cfg")
 
-#try:
-    session = PacktPubHttpSession(PacktAccountDataModel(cfgFilePath))
-    grabber = BookGrabber(session)
-    downloader = BookDownloader(session)
-    if args.sgd:
-        from utils.googleDrive import GoogleDriveManager
-        googleDrive= GoogleDriveManager(cfgFilePath)
-
-    if args.grab or args.grabl or args.grabd or args.sgd or args.mail:
-        if not args.grabl:
-            grabber.grabEbook()
-        else:
-            grabber.grabEbook(logEbookInfodata=True)
-
-    if args.grabd or args.dall or args.dchosen or args.sgd or args.mail:
-        downloader.getDataOfAllMyBooks()
-    intoFolder = False
-    if args.folder:
-        intoFolder = True
-    if args.grabd or args.sgd or args.mail:
-        if args.sgd or args.mail:
-            session.getCurrentConfig().downloadFolderPath = os.getcwd()
-        downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
-        if args.sgd or args.mail:
-           paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
-                   for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
-                       if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
+    try:
+        session = PacktPubHttpSession(PacktAccountDataModel(cfgFilePath))
+        grabber = BookGrabber(session)
+        downloader = BookDownloader(session)
         if args.sgd:
-           googleDrive.send_files(paths)
-        elif args.mail:
-           from utils.mail import MailBook
-           mb = MailBook(cfgFilePath)
-           pdfPath = None
-           mobiPath = None
-           try:
-               pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
-               mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
-           except:
-               pass
-           if pdfPath:
-               mb.send_book(pdfPath)
-           if mobiPath:
-               mb.send_kindle(mobiPath)
-        if args.sgd or args.mail:
-           [os.remove(path) for path in paths]
+            from utils.googleDrive import GoogleDriveManager
+            googleDrive= GoogleDriveManager(cfgFilePath)
 
-    elif args.dall:
-        downloader.downloadBooks(intoFolder = intoFolder)
+        if args.grab or args.grabl or args.grabd or args.sgd or args.mail:
+            if not args.grabl:
+                grabber.grabEbook()
+            else:
+                grabber.grabEbook(logEbookInfodata=True)
 
-    elif args.dchosen:
-        downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder = intoFolder)
-    logger.success("Good, looks like all went well! :-)")
-#except Exception as e:
-#    logger.error("Exception occurred {}".format(e))
+        if args.grabd or args.dall or args.dchosen or args.sgd or args.mail:
+            downloader.getDataOfAllMyBooks()
+        intoFolder = False
+        if args.folder:
+            intoFolder = True
+        if args.grabd or args.sgd or args.mail:
+            if args.sgd or args.mail:
+                session.getCurrentConfig().downloadFolderPath = os.getcwd()
+            downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
+            if args.sgd or args.mail:
+               paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
+                       for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
+                           if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
+            if args.sgd:
+               googleDrive.send_files(paths)
+            elif args.mail:
+               from utils.mail import MailBook
+               mb = MailBook(cfgFilePath)
+               pdfPath = None
+               mobiPath = None
+               try:
+                   pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
+                   mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
+               except:
+                   pass
+               if pdfPath:
+                   mb.send_book(pdfPath)
+               if mobiPath:
+                   mb.send_kindle(mobiPath)
+            if args.sgd or args.mail:
+               [os.remove(path) for path in paths]
+
+        elif args.dall:
+            downloader.downloadBooks(intoFolder = intoFolder)
+
+        elif args.dchosen:
+            downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder = intoFolder)
+        logger.success("Good, looks like all went well! :-)")
+    except Exception as e:
+        logger.error("Exception occurred {}".format(e))
+        if args.report_mail:
+            from utils.mail import MailBook
+            mb = MailBook(cfgFilePath)
+            mb.send_info(body="Today's book grabbing has failed with exception: {}!\n Check this out!".format(str(e)))            

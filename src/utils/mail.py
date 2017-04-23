@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import requests
 import os
 import configparser
-import re
 import smtplib
 from os.path import basename
 from email.mime.application import MIMEApplication
@@ -34,27 +32,20 @@ class MailBook:
             self._kindle_emails = config.get("MAIL", 'kindleEmails').split(COMMA)
         except configparser.NoSectionError:
             raise ValueError("ERROR: need at least one from and one or more to emails")
-
-    def send_book(self, book, to=None, subject=None, body=None):
-        if not os.path.isfile(book):
-            raise
-        book_name = basename(book)
+    
+    def _create_email_msg(self, to=None, subject=None, body=None):
         msg = MIMEMultipart()
         msg['From'] = self._send_from
         if to:
             self._to_emails = to
         msg['To'] = COMMASPACE.join(self._to_emails)
         msg['Date'] = formatdate(localtime=True)
-        msg['Subject'] = subject if subject else "{}: {}".format(DEFAULT_SUBJECT, book_name)
+        msg['Subject'] = subject
         body = body if body else DEFAULT_BODY
-        msg.attach(MIMEText(body))
-        with open(book, "rb") as f:
-            part = MIMEApplication(
-                f.read(),
-                Name=book_name
-            )
-            part['Content-Disposition'] = 'attachment; filename="{}"'.format(book_name)
-            msg.attach(part)
+        msg.attach(MIMEText(body))   
+        return msg
+    
+    def _send_email(self, msg):
         try:
             smtp = smtplib.SMTP(host=self._smtp_host, port=self._smtp_port)
             smtp.connect(host=self._smtp_host, port=self._smtp_port)
@@ -66,8 +57,28 @@ class MailBook:
             smtp.sendmail(self._send_from, self._to_emails, msg.as_string())
             logger.info('Email to {} has been succesfully sent'.format(','.join(self._to_emails)))
         except Exception as e:
-            logger.error('Sending failed with an error: {}'.format(str(e)))    
-        smtp.quit()
+            logger.error('Sending failed with an error: {}'.format(str(e)))
+        finally:
+            smtp.quit()
+    
+    def send_info(self, subject="Info message from packtPublishingFreeEbook.py script", body=None):
+        msg = self._create_email_msg(subject=subject, body=body)
+        self._send_email(msg)
+    
+    def send_book(self, book, to=None):
+        if not os.path.isfile(book):
+            raise
+        book_name = basename(book)
+        subject = "{}: {}".format(DEFAULT_SUBJECT, book_name)
+        msg = self._create_email_msg(to, subject=subject)
+        with open(book, "rb") as f:
+            part = MIMEApplication(
+                f.read(),
+                Name=book_name
+            )
+            part['Content-Disposition'] = 'attachment; filename="{}"'.format(book_name)
+            msg.attach(part)
+        self._send_email(msg)
 
     def send_kindle(self, book):
         if not self._kindle_emails:
