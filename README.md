@@ -57,7 +57,7 @@
   python packtPublishingFreeEbook.py -sgd
   ```
   
-  - Option *-m* [--mail] - claims and sends an email with the newest book (mail option confguration under [MAIL] path in *configFile.cfg*) 
+  - Option *-m* [--mail] - claims and sends an email with the newest book in PDF format (and MOBI if is also downloaded; see mail options confguration under [MAIL] path in *configFile.cfg*)
   ```
   python packtPublishingFreeEbook.py -m
   ```
