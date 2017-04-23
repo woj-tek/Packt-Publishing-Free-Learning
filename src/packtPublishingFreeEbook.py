@@ -15,6 +15,7 @@ logger = log_manager.get_logger(__name__)
 # downgrading logging level for requests
 logging.getLogger("requests").setLevel(logging.WARNING)
 
+
 #################################-MAIN CLASSES-###########################################
 class PacktAccountDataModel(object):
     """Contains all needed urls, passwords and packtpub account data stored in .cfg file"""
@@ -200,12 +201,12 @@ class BookDownloader(object):
 
         myBooksHtml = BeautifulSoup(r.text, 'html.parser')
         all = myBooksHtml.find(id='product-account-list').find_all('div', {'class': 'product-line unseen'})
-        self.bookData = [{'title': re.sub(r'\s*\[e\w+\]\s*', '', attr['title'], flags=re.I).strip(' '), #remove '[eBook]' from the title
+        self.bookData = [{'title': re.sub(r'\s*\[e\w+\]\s*', '', attr['title'], flags=re.I).strip(' '), # remove '[eBook]' from the title
                           'id': attr['nid']} for attr in all]
         for i, div in enumerate(myBooksHtml.find_all('div', {'class': 'product-buttons-line toggle'})):
             downloadUrls = {}
             for a_href in div.find_all('a'):
-                m = re.match(r'^(/[a-zA-Z]+_download/(\w+)(/(\w+))*)', a_href.get('href'))#extract the download link from href like: "/ebook_download/20892/pdf"
+                m = re.match(r'^(/[a-zA-Z]+_download/(\w+)(/(\w+))*)', a_href.get('href'))# extract the download link from href like: "/ebook_download/20892/pdf"
                 if m:
                     if m.group(4) is not None:
                         downloadUrls[m.group(4)] = m.group(0)
@@ -226,7 +227,7 @@ class BookDownloader(object):
         :param titles: list('C# tutorial', 'c++ Tutorial') ;
         :param formats: tuple('pdf','mobi','epub','code');
         """
-        #download ebook
+        # download ebook
         if formats is None:
             formats = self.accountData.downloadFormats
             if formats is None:
@@ -235,7 +236,7 @@ class BookDownloader(object):
             tempBookData = [data for data in self.bookData \
                             if any(PacktAccountDataModel.convertBookTitleToValidString(data['title']) == \
                             PacktAccountDataModel.convertBookTitleToValidString(title) for title in titles)]
-        else:#download all
+        else:# download all
             tempBookData = self.bookData
         if len(tempBookData) == 0:
             logger.info("There is no books with provided titles: {} at your account!".format(titles))
@@ -248,7 +249,7 @@ class BookDownloader(object):
                         fileType = 'zip'
                     else:
                         fileType = form
-                    title = PacktAccountDataModel.convertBookTitleToValidString(tempBookData[i]['title'])#format valid pathname
+                    title = PacktAccountDataModel.convertBookTitleToValidString(tempBookData[i]['title'])# format valid pathname
                     logger.info("Title: '{}'".format(title))
                     if intoFolder:
                         targetDownloadPath = os.path.join(self.accountData.downloadFolderPath, title)
@@ -279,7 +280,7 @@ class BookDownloader(object):
                                                 f.write(chunk)
                                                 f.flush()
                                         if is_interactive:
-                                            self.__updateDownloadProgressBar(-1)#add end of line
+                                            self.__updateDownloadProgressBar(-1)# add end of line
                                 if form == 'code':
                                     logger.success("Code for eBook: '{}' downloaded successfully!".format(title))
                                 else:
@@ -294,7 +295,7 @@ class BookDownloader(object):
         logger.info("{} eBooks have been downloaded!".format(str(nrOfBooksDownloaded)))
 
 
-#Main
+# Main
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -312,7 +313,7 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("-m", "--mail", help="send download to emails defined in config file", default=False,
                         action="store_true")
-    parser.add_argument("--report_mail", help="send fail report email when script somehow failed", default=False,
+    parser.add_argument("-rm", "--report_mail", help="send fail report email when script somehow failed", default=False,
                         action="store_true")
     parser.add_argument("-f", "--folder", help="downloads eBook into a folder", default=False,
                         action="store_true")
@@ -343,36 +344,36 @@ if __name__ == '__main__':
             intoFolder = True
         if args.grabd or args.sgd or args.mail:
             if args.sgd or args.mail:
-                session.getCurrentConfig().downloadFolderPath = os.getcwd()
-            downloader.downloadBooks([grabber.bookTitle], intoFolder = intoFolder)
+                session.getCurrentConfig().downloadFolderPath=os.getcwd()
+            downloader.downloadBooks([grabber.bookTitle], intoFolder=intoFolder)
             if args.sgd or args.mail:
-               paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
-                       for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
-                           if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
+                paths = [os.path.join(session.getCurrentConfig().downloadFolderPath, path) \
+                        for path in os.listdir(session.getCurrentConfig().downloadFolderPath) \
+                            if os.path.isfile(path) and path.find(grabber.bookTitle) is not -1]
             if args.sgd:
-               googleDrive.send_files(paths)
+                googleDrive.send_files(paths)
             elif args.mail:
-               from utils.mail import MailBook
-               mb = MailBook(cfgFilePath)
-               pdfPath = None
-               mobiPath = None
-               try:
-                   pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
-                   mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
-               except:
-                   pass
-               if pdfPath:
-                   mb.send_book(pdfPath)
-               if mobiPath:
-                   mb.send_kindle(mobiPath)
+                from utils.mail import MailBook
+                mb = MailBook(cfgFilePath)
+                pdfPath = None
+                mobiPath = None
+                try:
+                    pdfPath = [path for path in paths if path.split('.')[-1] == 'pdf'][-1]
+                    mobiPath = [path for path in paths if path.split('.')[-1] == 'mobi'][-1]
+                except:
+                    pass
+                if pdfPath:
+                    mb.send_book(pdfPath)
+                if mobiPath:
+                    mb.send_kindle(mobiPath)
             if args.sgd or args.mail:
-               [os.remove(path) for path in paths]
+                [os.remove(path) for path in paths]
 
         elif args.dall:
-            downloader.downloadBooks(intoFolder = intoFolder)
+            downloader.downloadBooks(intoFolder=intoFolder)
 
         elif args.dchosen:
-            downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder = intoFolder)
+            downloader.downloadBooks(session.getCurrentConfig().downloadBookTitles, intoFolder=intoFolder)
         logger.success("Good, looks like all went well! :-)")
     except Exception as e:
         logger.error("Exception occurred {}".format(e))

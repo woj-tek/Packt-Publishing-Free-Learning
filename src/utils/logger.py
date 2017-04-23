@@ -5,6 +5,8 @@ import os
 import sys
 
 LOG_FILE_PATH = os.path.join(os.getcwd(), "LOG_FILE.log")
+
+
 def get_logger(module_name):
     """ 
         module_name just to distinguish where the logs come from
@@ -14,25 +16,26 @@ def get_logger(module_name):
     logging.addLevelName(logging.SUCCESS, 'SUCCESS')
     logger = logging.getLogger(module_name)
     logger.success = lambda msg, *args: logger._log(logging.SUCCESS, msg, args)
-    
+
     # create formatters
     console_log_formatter = logging.Formatter('[%(levelname)s] - %(message)s')
     file_log_formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
     
-    #create file handler
+    # create file handler
     file_handler = logging.FileHandler(LOG_FILE_PATH)
     file_handler.setFormatter(file_log_formatter)
     file_handler.setLevel(logging.DEBUG)
-    
-    #create console log handler
+
+    # create console log handler
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(console_log_formatter)
     stream_handler.setLevel(logging.SUCCESS)
-    
+
     logger.setLevel(logging.SUCCESS)
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
     return logger
+
 
 if __name__ == "__main__":
     logger = get_logger('_this is me')

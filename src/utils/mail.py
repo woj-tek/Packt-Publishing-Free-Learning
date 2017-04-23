@@ -67,7 +67,7 @@ class MailBook:
     
     def send_book(self, book, to=None):
         if not os.path.isfile(book):
-            raise
+            raise ValueError("ERROR: {} file doesn't exist.".format(book))
         book_name = basename(book)
         subject = "{}: {}".format(DEFAULT_SUBJECT, book_name)
         msg = self._create_email_msg(to, subject=subject)
@@ -78,6 +78,7 @@ class MailBook:
             )
             part['Content-Disposition'] = 'attachment; filename="{}"'.format(book_name)
             msg.attach(part)
+        logger.info('Sending ebook: {} ...'.format(book_name))
         self._send_email(msg)
 
     def send_kindle(self, book):

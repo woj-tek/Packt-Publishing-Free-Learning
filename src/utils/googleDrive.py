@@ -21,11 +21,11 @@ logger = log_manager.get_logger(__name__)
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 CLIENT_SECRET_FILE = 'client_secret.json'
-FILE_TYPE=frozenset(["FILE","FOLDER"])
+FILE_TYPE=frozenset(["FILE", "FOLDER"])
 
 class GoogleDriveManager():
     """Allows to upload and download new content to Google Drive"""
-    
+
     def __init__(self, cfg_file_path):
         self.__set_config_data(cfg_file_path)
         self._root_folder= GoogleDriveFile(self.folder_name)
@@ -37,7 +37,6 @@ class GoogleDriveManager():
         # downgrading logging level for google api
         logging.getLogger("apiclient").setLevel(logging.WARNING)
 
-
     def __set_config_data(self, cfg_file_path):
         """Sets all the config data for Google drive manager"""
         configuration = configparser.ConfigParser()
@@ -45,7 +44,7 @@ class GoogleDriveManager():
             raise configparser.Error('{} file not found'.format(cfg_file_path))
         self.app_name = configuration.get("GOOGLE_DRIVE_DATA", 'gdAppName')
         self.folder_name = configuration.get("GOOGLE_DRIVE_DATA", 'gdFolderName')
-	        
+
     def __get_credentials(self):
         '''Gets valid user credentials from storage.
         If nothing has been stored, or if the stored credentials are invalid,
@@ -76,7 +75,7 @@ class GoogleDriveManager():
                 credentials = tools.run(flow, store)
             logger.success('Storing credentials to ' + credential_path)
         return credentials
-       
+
     def __find_folder_or_file_by_name(self,file_name,parent_id=None):
         if(file_name ==None or len(file_name)==0):
             return False
@@ -93,7 +92,7 @@ class GoogleDriveManager():
             page_token = response.get('nextPageToken', None)
             if page_token is None:
                 return False;
-        
+
     def check_if_file_exist_create_new_one(self,file_name,file_type="FOLDER",parent_id=None):
         if file_type not in FILE_TYPE:
             raise ValueError("Incorrect file_type arg. Allowed types are: %s"%(', '.join(list(FILE_TYPE))))
@@ -103,13 +102,11 @@ class GoogleDriveManager():
         else:
             logger.debug(file_name + " does not exist")
             if file_type is "FILE":
-                pass #TODO
-            else: #create new folder
+                pass # TODO
+            else: # create new folder
                 id=self.__create_new_folder(file_name,parent_id)
-
         return id
-        
-    
+
     def list_all_files_in_main_folder(self):
         results = self._service.files().list().execute()
         items = results.get('files', [])
@@ -119,7 +116,7 @@ class GoogleDriveManager():
             logger.debug('Files:')
             for item in items:
                 logger.debug('{0} ({1})'.format(item['name'], item['id']))
-        
+
     def __create_new_folder(self,folder_name,parent_folders_id =None):
         parent_id= parent_folders_id if parent_folders_id is None else [parent_folders_id]
         file_metadata = {
@@ -130,10 +127,9 @@ class GoogleDriveManager():
         file = self._service.files().create(body=file_metadata, fields='id').execute()
         logger.success('Created Folder ID: %s' % file.get('id'))
         return file.get('id')
-    
 
     def __extract_filename_ext_and_mimetype_from_path(self, path):
-        splitted_path= os.path.split(path)
+        splitted_path = os.path.split(path)
         file_name = splitted_path[-1]
         file_extension = file_name.split('.')[-1]
         mime_type = None
@@ -145,7 +141,7 @@ class GoogleDriveManager():
         parent_id= parent_folders_id if parent_folder_id is None else [parent_folder_id]
         file_metadata = {
           'name' : file_name,
-          'parents': parent_id
+          'parents' : parent_id
         }
         media = MediaFileUpload(path,mimetype=file_mime_type,  # if None, it will be guessed 
                                 resumable=True)
@@ -176,7 +172,7 @@ class GoogleDriveManager():
         while done is False:
             status, done = downloader.next_chunk()
             logger.debug("Download %d%%." % int(status.progress() * 100))
-               
+
 class GoogleDriveFile():
     ''' Helper class that describes File or Folder stored on GoogleDrive server'''
     def __init__(self,file_name):
