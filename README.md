@@ -62,6 +62,11 @@
   python packtPublishingFreeEbook.py -m
   ```
   
+  - SubOption *-rm* [--report_mail] - sends fail report email when script somehow failed (didn't finish succesfully)
+  ```
+  python packtPublishingFreeEbook.py -gd -rm
+  ```
+  
   - SubOption *-f* [--folder] - downloads an ebook into a created folder, named as ebook's title
   ```
   python packtPublishingFreeEbook.py -gd -f
