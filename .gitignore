@@ -6,3 +6,4 @@ configFile.cfg
 *.log
 __pycache__/
 *.pyc
+_books
